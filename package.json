@@ -1,0 +1,43 @@
+{
+  "name": "pptx-jsx",
+  "version": "0.1.0",
+  "description": "Generate native, editable PowerPoint (.pptx) decks from JSX components",
+  "main": "dist/index.js",
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "typecheck": "tsc -p tsconfig.examples.json",
+    "example:enavia": "tsx --tsconfig tsconfig.examples.json examples/enavia/build.tsx",
+    "preview": "bash scripts/preview.sh",
+    "storybook": "node storybook/build.mjs"
+  },
+  "license": "MIT",
+  "dependencies": {
+    "jszip": "^3.10.1",
+    "pptxgenjs": "^3.12.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.20.5",
+    "esbuild": "^0.24.0",
+    "tsx": "^4.19.2",
+    "typescript": "^5.6.3"
+  },
+  "type": "module",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    },
+    "./jsx-runtime": {
+      "types": "./dist/jsx-runtime.d.ts",
+      "default": "./dist/jsx-runtime.js"
+    },
+    "./jsx-dev-runtime": {
+      "types": "./dist/jsx-runtime.d.ts",
+      "default": "./dist/jsx-runtime.js"
+    }
+  },
+  "files": [
+    "dist"
+  ]
+}

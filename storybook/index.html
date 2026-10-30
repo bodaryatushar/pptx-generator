@@ -1,0 +1,207 @@
+<title>pptx-jsx Storybook</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&family=Poppins:wght@400;500;600;700&display=swap">
+<style>
+  /* Layout: workbench. Story list on the left, slide previews on a tinted stage, props + code beneath. */
+  :root {
+    --bg: #F7F6FA;
+    --panel: #FFFFFF;
+    --stage: #ECEAF2;
+    --fg: #1D1530;
+    --muted: #625A75;
+    --line: #DEDAE8;
+    --ink: #24074A;
+    --accent: #E86A00;
+    --accent-fg: #FFFFFF;
+    --danger: #B42318;
+    --code-bg: #1B1230;
+    --code-fg: #EDE8F7;
+    --font-display: "Poppins", "Segoe UI", system-ui, sans-serif;
+    --font-body: "IBM Plex Sans", "Segoe UI", system-ui, sans-serif;
+    --font-mono: "IBM Plex Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #130D20; --panel: #1C1430; --stage: #0D0817; --fg: #EEEAF6; --muted: #A79FBC;
+      --line: #2F2645; --ink: #CDB8FF; --accent: #FF9A3D; --accent-fg: #1A0F00; --danger: #FF8A80;
+      --code-bg: #0B0714; --code-fg: #E7E1F5; color-scheme: dark;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #130D20; --panel: #1C1430; --stage: #0D0817; --fg: #EEEAF6; --muted: #A79FBC;
+    --line: #2F2645; --ink: #CDB8FF; --accent: #FF9A3D; --accent-fg: #1A0F00; --danger: #FF8A80;
+    --code-bg: #0B0714; --code-fg: #E7E1F5; color-scheme: dark;
+  }
+
+  * { box-sizing: border-box; }
+  body { background: var(--bg); color: var(--fg); font: 15px/1.55 var(--font-body); }
+  body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px); z-index: 10; background: var(--panel); }
+
+  .topbar {
+    position: sticky; top: env(safe-area-inset-top, 0px); z-index: 5;
+    display: flex; align-items: center; gap: 12px; flex-wrap: wrap;
+    padding-block: 12px;
+    padding-left: max(16px, env(safe-area-inset-left, 0px));
+    padding-right: max(16px, env(safe-area-inset-right, 0px));
+    background: var(--panel); border-bottom: 1px solid var(--line);
+  }
+  .brand { font: 600 17px/1 var(--font-display); color: var(--ink); letter-spacing: -0.01em; }
+  .brand span { color: var(--accent); }
+  .topbar .tag { font: 500 12px/1 var(--font-mono); color: var(--muted); border: 1px solid var(--line); border-radius: 999px; padding: 5px 9px; }
+
+  .shell {
+    display: grid; grid-template-columns: 220px minmax(0, 1fr); gap: 24px;
+    padding-block: 20px 40px;
+    padding-left: max(16px, env(safe-area-inset-left, 0px));
+    padding-right: max(16px, env(safe-area-inset-right, 0px));
+    max-width: 1500px; margin: 0 auto;
+  }
+  nav { display: flex; flex-direction: column; gap: 2px; position: sticky; top: calc(env(safe-area-inset-top, 0px) + 72px); align-self: start; }
+  .nav-group { font: 600 11px/1 var(--font-body); text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); padding: 16px 10px 6px; }
+  .nav-group:first-child { padding-top: 4px; }
+  nav a { color: var(--fg); text-decoration: none; padding: 7px 10px; border-radius: 6px; font-size: 14px; }
+  nav a:hover { background: var(--stage); }
+  nav a.active { background: var(--ink); color: var(--panel); font-weight: 500; }
+  nav a:focus-visible, button:focus-visible, textarea:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+  main { min-width: 0; display: flex; flex-direction: column; gap: 20px; }
+  .story-head { display: flex; gap: 16px 24px; align-items: flex-end; justify-content: space-between; flex-wrap: wrap; }
+  .story-head > div { min-width: 0; max-width: 68ch; }
+  .eyebrow { font: 600 11px/1 var(--font-body); text-transform: uppercase; letter-spacing: 0.08em; color: var(--accent); }
+  h1 { font: 600 28px/1.15 var(--font-display); margin: 6px 0 6px; color: var(--ink); text-wrap: balance; letter-spacing: -0.015em; }
+  .story-head p { margin: 0; color: var(--muted); }
+  .actions { display: flex; flex-direction: column; align-items: flex-end; gap: 6px; }
+  .btn { font: 600 14px/1 var(--font-body); border: 0; border-radius: 8px; padding: 11px 16px; cursor: pointer; }
+  .btn-primary { background: var(--accent); color: var(--accent-fg); }
+  .btn-primary:hover { filter: brightness(1.05); }
+  .btn-primary:disabled { opacity: 0.6; cursor: progress; }
+  .btn-ghost { background: transparent; color: var(--muted); border: 1px solid var(--line); padding: 7px 10px; font-size: 12px; }
+  .btn-ghost:disabled { opacity: 0.5; cursor: default; }
+  #status { font-size: 13px; color: var(--muted); min-height: 1.2em; text-align: right; }
+
+  .stage { background: var(--stage); border-radius: 12px; padding: 20px; }
+  .stage-meta { display: flex; justify-content: space-between; font: 500 12px/1 var(--font-mono); color: var(--muted); margin-bottom: 14px; }
+  #slides { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 420px), 1fr)); gap: 20px; }
+  #slides.single { grid-template-columns: minmax(0, 1fr); max-width: 1100px; margin: 0 auto; }
+  .slide { margin: 0; display: flex; flex-direction: column; gap: 8px; }
+  .frame { background: #FFFFFF; border-radius: 4px; overflow: hidden; box-shadow: 0 1px 2px rgba(20, 8, 40, 0.12), 0 8px 24px rgba(20, 8, 40, 0.10); }
+  .frame svg { display: block; width: 100%; height: auto; }
+  figcaption { font: 500 12px/1 var(--font-mono); color: var(--muted); }
+
+  .panels { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.2fr); gap: 20px; }
+  .panel { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; display: flex; flex-direction: column; min-width: 0; }
+  .panel-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 12px 14px; border-bottom: 1px solid var(--line); }
+  .panel-head h2 { font: 600 13px/1 var(--font-body); margin: 0; }
+  .panel-head small { color: var(--muted); font-size: 12px; }
+  textarea {
+    width: 100%; min-height: 300px; resize: vertical; border: 0; padding: 14px;
+    font: 13px/1.55 var(--font-mono); background: var(--panel); color: var(--fg); border-radius: 0 0 12px 12px;
+  }
+  textarea:disabled { color: var(--muted); }
+  #props-error { margin: 0; padding: 10px 14px; color: var(--danger); font-size: 13px; border-top: 1px solid var(--line); }
+  pre { margin: 0; overflow: auto; max-height: 420px; background: var(--code-bg); color: var(--code-fg); padding: 14px; border-radius: 0 0 12px 12px; font: 13px/1.55 var(--font-mono); }
+
+  .howto { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 18px 20px; }
+  .howto h2 { font: 600 18px/1.2 var(--font-display); margin: 0 0 12px; color: var(--ink); }
+  .steps { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 260px), 1fr)); gap: 16px; }
+  .steps h3 { font: 600 14px/1.3 var(--font-body); margin: 0 0 6px; }
+  .steps p { margin: 0 0 8px; color: var(--muted); font-size: 14px; }
+  .steps pre { border-radius: 8px; font-size: 12px; }
+  .steps > div { min-width: 0; }
+
+  @media (max-width: 860px) {
+    .shell { grid-template-columns: minmax(0, 1fr); }
+    nav { position: static; flex-direction: row; flex-wrap: nowrap; overflow-x: auto; gap: 4px; padding-bottom: 4px; }
+    .nav-group { display: none; }
+    nav a { white-space: nowrap; border: 1px solid var(--line); }
+    .panels { grid-template-columns: minmax(0, 1fr); }
+    .actions { align-items: flex-start; }
+    #status { text-align: left; }
+    .stage { padding: 12px; }
+  }
+  @media (prefers-reduced-motion: reduce) { * { scroll-behavior: auto !important; transition: none !important; } }
+</style>
+
+<header class="topbar">
+  <div class="brand">pptx<span>·</span>jsx</div>
+  <div class="tag">Storybook · Enavia theme</div>
+</header>
+
+<div class="shell">
+  <nav id="nav" aria-label="Stories"></nav>
+  <main>
+    <section class="story-head">
+      <div>
+        <div class="eyebrow" id="story-group"></div>
+        <h1 id="story-title"></h1>
+        <p id="story-desc"></p>
+      </div>
+      <div class="actions">
+        <button class="btn btn-primary" id="download" type="button">Download .pptx</button>
+        <div id="status" role="status"></div>
+      </div>
+    </section>
+
+    <section class="stage" aria-label="Slide preview">
+      <div class="stage-meta"><span>Preview · 1280 × 720 design px</span><span id="slide-count"></span></div>
+      <div id="slides"></div>
+    </section>
+
+    <section class="panels">
+      <div class="panel">
+        <div class="panel-head">
+          <h2>Props</h2>
+          <div><small>Edit the JSON to re-render </small><button class="btn btn-ghost" id="reset" type="button">Reset</button></div>
+        </div>
+        <textarea id="props" spellcheck="false" aria-label="Story props as JSON"></textarea>
+        <p id="props-error" hidden></p>
+      </div>
+      <div class="panel">
+        <div class="panel-head">
+          <h2>Usage</h2>
+          <button class="btn btn-ghost" id="copy" type="button">Copy</button>
+        </div>
+        <pre><code id="code"></code></pre>
+      </div>
+    </section>
+
+    <section class="howto">
+      <h2>Use it in any project</h2>
+      <div class="steps">
+        <div>
+          <h3>1. Install and point JSX at it</h3>
+          <p>Any TypeScript or Babel project. No React needed.</p>
+          <pre>npm i github:you/pptx-jsx
+
+// tsconfig.json
+"jsx": "react-jsx",
+"jsxImportSource": "pptx-jsx"</pre>
+        </div>
+        <div>
+          <h3>2. Node, API route or CLI</h3>
+          <p>Write the file, or return the bytes from an endpoint.</p>
+          <pre>import { renderToFile, renderToBuffer } from "pptx-jsx";
+
+await renderToFile(&lt;MyDeck data={data} /&gt;, "deck.pptx");
+
+// Express / Next.js route
+res.setHeader("Content-Type", PPTX_MIME);
+res.send(await renderToBuffer(&lt;MyDeck /&gt;));</pre>
+        </div>
+        <div>
+          <h3>3. In the browser (React, Vue, …)</h3>
+          <p>Preview with SVG and build the .pptx client-side, like this page does.</p>
+          <pre>const slides = renderToSvg(&lt;MyDeck /&gt;);
+// React: &lt;div dangerouslySetInnerHTML={{ __html: slides[0].svg }} /&gt;
+
+const blob = await renderToBlob(&lt;MyDeck /&gt;);
+saveAs(blob, "deck.pptx");</pre>
+        </div>
+      </div>
+    </section>
+  </main>
+</div>
+
+<script>/*BUNDLE*/</script>
