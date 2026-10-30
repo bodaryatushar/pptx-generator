@@ -4,6 +4,7 @@
   "description": "Generate native, editable PowerPoint (.pptx) decks from JSX components",
   "main": "dist/index.js",
   "scripts": {
+    "prepare": "npm run build",
     "build": "tsc -p tsconfig.json",
     "typecheck": "tsc -p tsconfig.examples.json",
     "example:enavia": "tsx --tsconfig tsconfig.examples.json examples/enavia/build.tsx",

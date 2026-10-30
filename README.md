@@ -61,7 +61,7 @@ Add `examples/enavia/assets/logo.png` to use the real logo instead of the placeh
 
 ## Use it in any project
 
-1. Install it (from git, or publish it to npm or your private registry), then point JSX at it in `tsconfig.json`:
+1. Install it with `npm i github:bodaryatushar/pptx-generator` (the `prepare` script builds `dist/` on install), then point JSX at it in `tsconfig.json`:
    `"jsx": "react-jsx", "jsxImportSource": "pptx-jsx"`. You don't need React.
 2. **Node / API routes:** `renderToFile(<Deck />, "deck.pptx")`, or send `await renderToBuffer(<Deck />)` with the `PPTX_MIME` content type.
 3. **Browser (React, Vue, plain JS):** `renderToSvg(<Deck />)` returns one SVG string per slide for previews, and `renderToBlob(<Deck />)` builds the real `.pptx` in the browser.
